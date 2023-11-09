@@ -1,8 +1,8 @@
+#!/usr/bin/python3
 import requests
 import json
 import sys
 from pprint import pprint
-
 
 def find_known_associates(target, allNames):
     base_name = target.split('-')[0]
@@ -14,20 +14,29 @@ def find_items(target):
     result = requests.get(url).json()
     pokeItems =  [d.get('item', {}).get('name', None) for d in result['held_items']]
     height = result.get("height")
-    return pokeItems, height\
+    return pokeItems, height
+ 
+def get_data(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        return data
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data from {url}: {e}")
+        return None
 
 
-
-
-def finalResult(abilities):
+def final_result(abilities):
     url = f'https://pokeapi.co/api/v2/pokemon/?limit=2000'
-    pokedex = requests.get(url).json()
+    pokedex = get_data(url)
+    #pokedex = requests.get(url).json()
     
     allNames = set([d.get('name') for d in pokedex['results']])
     finalResult = {}
     for ability in abilities:
-        url = f'https://pokeapi.co/api/v2/ability/{ability}'
-        result = requests.get(url).json()
+        ability_url = f'https://pokeapi.co/api/v2/ability/{ability}'
+        result = get_data(ability_url)
         pokemonWithAbility = [d.get('pokemon', {}).get('name', None) for d in result.get("pokemon")]
         abilityResult = []
         heightDict = {}
@@ -62,4 +71,4 @@ def finalResult(abilities):
 if __name__ == "__main__":
     #test
     arg = sys.argv[1:]
-    finalResult(arg)
+    final_result(arg)
